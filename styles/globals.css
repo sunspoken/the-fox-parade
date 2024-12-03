@@ -1,18 +1,24 @@
 html,
 body {
-  padding: 0;
+  font-family: "Schibsted Grotesk", sans-serif;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 * {
-  box-sizing: border-box;
+  font-family: inherit; /* Inherit from parent elements */
+  box-sizing: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700; /* Bold */
+}
+
+p {
+  font-weight: 400; /* Regular */
 }
 
 @media (prefers-color-scheme: dark) {
