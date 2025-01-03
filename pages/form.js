@@ -61,6 +61,8 @@ export default function AnimatedForm() {
       return;
     }
 
+    console.log("Submitting CAPTCHA token:", captchaToken); // Debugging log
+
     try {
       const response = await fetch(
         "https://parade-worker.sunspokenstudio.workers.dev",
