@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { db } from "../lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
+import Turnstile from "react-turnstile"; // Import Turnstile component
 
 export default function AnimatedForm() {
-  const [step, setStep] = useState(0); // Tracks current question
-  const [responses, setResponses] = useState({ name: "", answers: [] }); // Stores all answers
+  const [step, setStep] = useState(0);
+  const [responses, setResponses] = useState({ name: "", answers: [] });
   const [submitted, setSubmitted] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null); // Store CAPTCHA token
 
@@ -34,32 +33,25 @@ export default function AnimatedForm() {
 
   const handleNext = (value) => {
     setResponses((prevResponses) => {
-      let updatedResponses;
+      let updatedResponses =
+        step === 0
+          ? { ...prevResponses, name: value }
+          : {
+              ...prevResponses,
+              answers: [
+                ...prevResponses.answers,
+                { [questions[step].key]: value },
+              ],
+            };
 
-      if (step === 0) {
-        // First step updates the name field
-        updatedResponses = { ...prevResponses, name: value };
-      } else {
-        // Other steps append to the answers array
-        updatedResponses = {
-          ...prevResponses,
-          answers: [...prevResponses.answers, { [questions[step].key]: value }],
-        };
-      }
-
-      // Check if it's the last step, and call handleSubmit if needed
       if (step >= questions.length - 1) {
         handleSubmit(updatedResponses);
       }
-
-      console.log(updatedResponses);
-
-      return updatedResponses; // Return the updated state
+      return updatedResponses;
     });
 
-    // Increment the step (safe to do here)
     if (step < questions.length - 1) {
-      setStep((prevStep) => prevStep + 1); // Step change doesn’t depend on `responses`
+      setStep((prevStep) => prevStep + 1);
     }
   };
 
@@ -74,20 +66,15 @@ export default function AnimatedForm() {
         "https://parade-worker.sunspokenstudio.workers.dev",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ...updatedResponses, captchaToken }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...updatedResponses, captchaToken }), // Send CAPTCHA token
         }
       );
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Submission failed");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to submit form");
-      }
-
-      setSubmitted(true); // Form successfully submitted
+      setSubmitted(true);
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -104,6 +91,8 @@ export default function AnimatedForm() {
       }}
     >
       <div style={{ width: 600, textAlign: "center" }}>
+        <Turnstile sitekey={siteKey} onVerify={setCaptchaToken} />
+        {/* CAPTCHA Integration */}
         <AnimatePresence mode="wait">
           {submitted ? (
             <motion.h1
@@ -128,11 +117,9 @@ export default function AnimatedForm() {
                 <motion.input
                   type="text"
                   placeholder={questions[step].placeholder}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.target.value.trim() !== "") {
-                      handleNext(e.target.value);
-                    }
-                  }}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleNext(e.target.value)
+                  }
                   style={{
                     padding: "10px",
                     fontSize: "1em",
