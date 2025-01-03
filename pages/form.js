@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Turnstile from "react-turnstile"; // Import Turnstile component
+import Turnstile from "react-turnstile";
+import styles from "../styles/form.module.css"; // ✅ Import CSS module
 
 export default function AnimatedForm() {
   const [step, setStep] = useState(0);
   const [responses, setResponses] = useState({ name: "", answers: [] });
   const [submitted, setSubmitted] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null); // Store CAPTCHA token
+  const [captchaToken, setCaptchaToken] = useState(null);
 
-  const siteKey = "0x4AAAAAAA4fDyXC6N5FMQ4R"; // Replace with your Cloudflare Site Key
+  const siteKey = "0x4AAAAAAA4fDyXC6N5FMQ4R";
 
   const questions = [
     {
@@ -44,15 +45,11 @@ export default function AnimatedForm() {
               ],
             };
 
-      if (step >= questions.length - 1) {
-        handleSubmit(updatedResponses);
-      }
+      if (step >= questions.length - 1) handleSubmit(updatedResponses);
       return updatedResponses;
     });
 
-    if (step < questions.length - 1) {
-      setStep((prevStep) => prevStep + 1);
-    }
+    if (step < questions.length - 1) setStep((prevStep) => prevStep + 1);
   };
 
   const handleSubmit = async (updatedResponses) => {
@@ -61,7 +58,7 @@ export default function AnimatedForm() {
       return;
     }
 
-    console.log("Submitting CAPTCHA token:", captchaToken); // Debugging log
+    console.log("Submitting CAPTCHA token:", captchaToken);
 
     try {
       const response = await fetch(
@@ -69,7 +66,7 @@ export default function AnimatedForm() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...updatedResponses, captchaToken }), // Send CAPTCHA token
+          body: JSON.stringify({ ...updatedResponses, captchaToken }),
         }
       );
 
@@ -83,18 +80,9 @@ export default function AnimatedForm() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100vw",
-        height: "100vh",
-      }}
-    >
-      <div style={{ width: 600, textAlign: "center" }}>
+    <div className={styles.container}>
+      <div className={styles.formBox}>
         <Turnstile sitekey={siteKey} onVerify={setCaptchaToken} />
-        {/* CAPTCHA Integration */}
         <AnimatePresence mode="wait">
           {submitted ? (
             <motion.h1
@@ -119,28 +107,19 @@ export default function AnimatedForm() {
                 <motion.input
                   type="text"
                   placeholder={questions[step].placeholder}
+                  className={styles.input}
                   onKeyDown={(e) =>
                     e.key === "Enter" && handleNext(e.target.value)
                   }
-                  style={{
-                    padding: "10px",
-                    fontSize: "1em",
-                    marginTop: "10px",
-                    width: "60%",
-                  }}
                   autoFocus
                 />
               )}
               {questions[step].type === "choice" && (
-                <div style={{ marginTop: "20px" }}>
+                <div>
                   {questions[step].choices.map((choice, index) => (
                     <motion.button
                       key={index}
-                      style={{
-                        padding: "10px 20px",
-                        margin: "5px",
-                        cursor: "pointer",
-                      }}
+                      className={styles.button}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleNext(choice)}
