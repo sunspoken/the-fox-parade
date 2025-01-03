@@ -73,12 +73,11 @@ export default function AnimatedForm() {
       const response = await fetch(
         "https://parade-worker.sunspokenstudio.workers.dev",
         {
-          // Replace with your actual Worker URL
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(updatedResponses, captchaToken), // Send responses as JSON
+          body: JSON.stringify({ ...updatedResponses, captchaToken }),
         }
       );
 
