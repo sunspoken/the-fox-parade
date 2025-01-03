@@ -7,6 +7,9 @@ export default function AnimatedForm() {
   const [step, setStep] = useState(0); // Tracks current question
   const [responses, setResponses] = useState({ name: "", answers: [] }); // Stores all answers
   const [submitted, setSubmitted] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null); // Store CAPTCHA token
+
+  const siteKey = "0x4AAAAAAA4fDyXC6N5FMQ4R"; // Replace with your Cloudflare Site Key
 
   const questions = [
     {
@@ -61,11 +64,33 @@ export default function AnimatedForm() {
   };
 
   const handleSubmit = async (updatedResponses) => {
+    if (!captchaToken) {
+      alert("Please complete CAPTCHA verification.");
+      return;
+    }
+
     try {
-      await addDoc(collection(db, "responses"), updatedResponses);
-      setSubmitted(true);
+      const response = await fetch(
+        "https://parade-worker.sunspokenstudio.workers.dev",
+        {
+          // Replace with your actual Worker URL
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedResponses, captchaToken), // Send responses as JSON
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit form");
+      }
+
+      setSubmitted(true); // Form successfully submitted
     } catch (error) {
-      console.error("Error submitting form: ", error);
+      console.error("Error submitting form:", error);
     }
   };
 
